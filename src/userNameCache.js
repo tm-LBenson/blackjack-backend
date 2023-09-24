@@ -1,12 +1,28 @@
+const CHECK_INTERVAL = 10000; // 10 seconds
+const TIMEOUT_DURATION = 30000; // 30 seconds
+
 const currentNames = {};
 
 function deleteName(name) {
-  for (const key in currentNames) {
-    if (currentNames[key] === name) {
-      delete currentNames[key];
-      break;
-    }
-  }
+  delete currentNames[name];
+  console.log(name + 'logged out.');
 }
 
-module.exports = { currentNames, deleteName };
+// Initialize check for timeout users
+function initTimeoutCheck() {
+  setInterval(() => {
+    const currentTime = Date.now();
+    for (const name in currentNames) {
+      if (currentTime - currentNames[name] > TIMEOUT_DURATION) {
+        deleteName(name);
+      }
+    }
+  }, CHECK_INTERVAL);
+}
+
+// Refresh timestamp for a user
+function refreshName(name) {
+  currentNames[name] = Date.now();
+}
+
+module.exports = { currentNames, deleteName, refreshName, initTimeoutCheck };
