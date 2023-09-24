@@ -1,4 +1,7 @@
 'use strict';
+
+const { currentNames, refreshName } = require('./userNameCache');
+
 let io;
 const startIo = (incomingIo) => {
   io = incomingIo || {};
@@ -7,6 +10,23 @@ const startIo = (incomingIo) => {
     console.log('IO server connection');
 
     socket.emit('proofOfLife', 'This is the proof of life');
+
+    socket.on('CHECK', (username) => {
+      let matchFound = false;
+
+      for (const listUsername in currentNames) {
+        if (listUsername === username) {
+          matchFound = true;
+          console.log(matchFound);
+          break;
+        }
+      }
+      socket.emit('CHECK', matchFound);
+    });
+
+    socket.on('HEARTBEAT', (username) => {
+      refreshName(username);
+    });
 
     socket.on('JOIN', (userId) => {
       socket.join(userId);
