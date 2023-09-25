@@ -1,13 +1,14 @@
 const { join } = require('path');
-const { io, doIoStuff } = require('../socket');
-const { currentNames, deleteName } = require('../userNameCache');
+const {
+  currentNames,
+  deleteName,
+  initTimeoutCheck,
+} = require('../userNameCache');
 
 function incrHandler(req, res) {
   const session = req.session;
   session.count = (session.count || 0) + 1;
   res.status(200).end('' + session.count);
-
-  doIoStuff(session);
 }
 
 function loginHandler(req, res, next) {
@@ -16,6 +17,8 @@ function loginHandler(req, res, next) {
     const userName = req.body.username;
     if (!currentNames.hasOwnProperty(userName)) {
       currentNames[userName] = Date.now();
+      initTimeoutCheck();
+
       res
         .status(200)
         .json({ success: true, message: 'Logged in successfully.' });
@@ -31,13 +34,13 @@ function loginHandler(req, res, next) {
 }
 
 function logoutHandler(req, res) {
-  const sessionId = req.session.id;
-  req.session.destroy(() => {
-    // disconnect all Socket.IO connections linked to this session ID
-    io.in(sessionId).disconnectSockets();
+  try {
     deleteName(req.body.username);
     res.status(204).end();
-  });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error);
+  }
 }
 
 function indexHandler(req, res) {
