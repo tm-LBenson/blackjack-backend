@@ -5,7 +5,7 @@ const currentNames = {};
 
 function deleteName(name) {
   delete currentNames[name];
-  console.log(name + 'logged out.');
+  console.log(name, 'logged out.');
 }
 
 // Initialize check for timeout users
@@ -23,6 +23,7 @@ function initTimeoutCheck() {
 // Refresh timestamp for a user
 function refreshName(name) {
   currentNames[name] = Date.now();
+  console.log('Refreshing', name);
 }
 
 module.exports = { currentNames, deleteName, refreshName, initTimeoutCheck };
