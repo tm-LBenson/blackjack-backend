@@ -1,10 +1,7 @@
+'use strict';
 const { join } = require('path');
-const {
-  currentNames,
-  deleteName,
-  initTimeoutCheck,
-} = require('../userNameCache');
-
+const currentNames = require('../userNameCache');
+const { notifyUsers } = require('../socket');
 function incrHandler(req, res) {
   const session = req.session;
   session.count = (session.count || 0) + 1;
@@ -13,12 +10,11 @@ function incrHandler(req, res) {
 
 function loginHandler(req, res, next) {
   try {
-    console.log(req.body);
     const userName = req.body.username;
     if (!currentNames.hasOwnProperty(userName)) {
       currentNames[userName] = Date.now();
-      initTimeoutCheck();
 
+      notifyUsers();
       res
         .status(200)
         .json({ success: true, message: 'Logged in successfully.' });
@@ -35,7 +31,7 @@ function loginHandler(req, res, next) {
 
 function logoutHandler(req, res) {
   try {
-    deleteName(req.body.username);
+    currentNames.deleteName(req.body.username);
     res.status(204).end();
   } catch (error) {
     console.error(error);
